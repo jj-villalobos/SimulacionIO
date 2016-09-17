@@ -39,32 +39,29 @@ enum Eventos {
 };
 
 
-///ESTRUCTURAS USADAS PARA MODELAR LA SOLUCION----------------------------------------------------------------
-///Se hizo una para cada objeto que se quizo representar en la simulacion, cada uno de estos objetos contiene datos esenciales para el seguimiento
-///de la simulación y para la recolección de estadísticas finales.
+/// ESTRUCTURAS USADAS PARA MODELAR LA SOLUCION------------------------------
+
+struct computadora {
+    char id;                        //identificador para referenciar a la computadora
+    int archivos = 0;               //numero archivos enviados en el turno presente
+    bool ocupada = false;
+};
+
 
 struct paquete {
     int tamano;          //numero de paquetes
-    int prioridad;       //tipo de prioridad
     double tiempoArribo; //hora del reloj en la que llega el archivo
 };
 
 struct mensaje {
     int tamano;          //numero de paquetes
-    int prioridad;       //tipo de prioridad
     double tiempoArribo; //hora del reloj en la que llega el archivo
 };
 
-struct computadora {
-    char id;                        //identificador para referenciar a la computadora
-    bool token;                     //posesion o no del token
-    double tiempoTok;               //tiempo que le resta con el token a cada máquina
-    list<int> archivos_token;       //lista de ints que recolecta la cantidad de archivos que se envio por turno del token en cada computadora
-    list <mensaje*> colaArchivos1;  //cola para archivos de prioridad 1
-    list <mensaje*> colaArchivos2;  //cola para archivos de prioridad 2
-    int archivos = 0;               //numero archivos enviados en el turno presente
+struct ACK {
+    int id;          //numero de paquetes
+    double tiempoArribo; //hora del reloj en la que llega el archivo
 };
-
 
 
 ///-------------------------------------------------------------------------------------------------------
@@ -76,9 +73,10 @@ colaP colaEventos; //cola de tipo colaP, implementado por una lista de pares: do
 
 double reloj = 0.0; //reloj global de la simulación
 
-computadora *A = new computadora; //struct representando cada una de las computadoras, son globales
-computadora *B = new computadora;
-computadora *C = new computadora;
+static computadora
+ *A = new computadora, //struct representando cada una de las computadoras, son globales
+ *B = new computadora,
+ *C = new computadora;
 
 void restEst() ;
 
@@ -180,7 +178,7 @@ void restEst()                    //como las structs usadas son globales y la si
 }
 */
 
-
+///> nombres delos eventos
 static string eventos [] = {
     "llega msg a C1",
     "llega pkg a C1",
@@ -196,17 +194,15 @@ static string eventos [] = {
 };
 
 static string eventoProcesado(int i) {
-
     return eventos[i];
 }
 
 
 //-------------------------------------------------------------
-//----------------------------EVENTOS--------------------------
+///---------------------------EVENTOS--------------------------
 //-------------------------------------------------------------
 
-///Todos los eventos se programaron sin parámetros para que se pudieran llamar más fácilmente, es por ello que se declararon las 3 computadoras,
-///el servidor y el router como globales
+///Todos los eventos se programaron sin parámetros para que se pudieran llamar más fácilmente
 
 void llega_msg_a_C1                   (); // E1
 void llega_pkg_a_C1                   (); // E2
@@ -223,8 +219,6 @@ void se_activa_el_timer               (); // E11
 
 //-------------------------------------------------------------
 //-------------------------------------------------------------
-//-------------------------------------------------------------
-
 
 
 /**
@@ -268,17 +262,14 @@ int main() {
     int numSim,
         tSim  ; ///> tiempo ma´ximo que puede durar la simulacio´n
 
-    cout << "Ingrese el numero de veces que quiere correr la simulacion."<<endl<<endl;
-    cin >> numSim;
-    cout  << endl << "Ingrese la duracion maxima de \n la simulacion [en segundos]"<<endl<<endl;
-    cin >> tSim;
+    cout << "Ingrese el numero de veces que quiere correr la simulacion.\n\n"; cin >> numSim;
+    cout  << endl << "Ingrese la duracion maxima de \n la simulacion [en segundos]\n\n"; cin >> tSim;
 
     double tiempoSimulacion = (int) tSim;
 
 
     string  resp;
-    cout << endl << "Desea ver simulacion en modo lento (si/no)?" << endl << endl;
-    cin >> resp;
+    cout << endl << "Desea ver simulacion en modo lento (si/no)? \n\n"  ; cin >> resp;
 
     bool lento = (resp == "si") ? true: false;
 
@@ -328,11 +319,12 @@ int main() {
             /// reloj = tiempo del evento que va a ocurrir
             reloj = event.time;
 
-            ejecutarEvento( event.id ); ///ejecuta el evento con la tabla de eventoss
+            ejecutarEvento( event.id ); ///ejecuta el evento con la tabla de eventos
 
 
             /// si se desencola un evento que sobrepase la duración
             /// solicitada, entonces se detiene la simulación
+
             if( event.time > tiempoSimulacion) break;
 
             cont++;
@@ -340,19 +332,22 @@ int main() {
             cout << "SIMULACION #"<<i+1<<":"<<endl<<endl;
             cout << "Evento #"<<cont<<endl;
 
-            longitudA.push_back(A->colaArchivos1.size() + A->colaArchivos2.size()); //se guardan longitudes de colas para las estadísticas
+            ///se guardan longitudes de colas para las estadísticas
+            /*
+            longitudA.push_back(A->colaArchivos1.size() + A->colaArchivos2.size());
             longitudB.push_back(B->colaArchivos1.size() + B->colaArchivos2.size());
             longitudC.push_back(C->colaArchivos1.size() + C->colaArchivos2.size());
 
             //longitudAV1.push_back(AV->cola1.size());
             //longitudAV2.push_back(AV->cola2.size());
+            */
 
-            cout << endl <<"Reloj: "<< reloj << endl;
+            cout << "\nReloj: "<< reloj << endl;
             /// cout << endl <<"La computadora con el token es la maquina: "<< TokenHolder->id << endl;
 
             cout << endl <<"Evento procesado actualmente: "<< eventoProcesado( event.id  ) << endl;
-            //cout << endl <<"Tiempo de turno de token: "<< Token << endl;
 
+            /*
             cout << endl <<"Longitud cola archivos prioridad 1 de A: "<< A->colaArchivos1.size()<< endl;
             cout  <<       "Longitud cola archivos prioridad 2 de A: "<< A->colaArchivos2.size()<< endl << endl;
 
@@ -361,6 +356,7 @@ int main() {
 
             cout << endl <<"Longitud cola archivos prioridad 1 de C: "<< C->colaArchivos1.size()<< endl;
             cout <<        "Longitud cola archivos prioridad 2 de C: "<< C->colaArchivos2.size()<< endl;
+            */
 
             cout << "Cantidad de eventos encolados: " << colaEventos.heap.size() << endl;
 
@@ -399,17 +395,15 @@ int main() {
         //double promPer = Est::promedioPermanencia(&permanencia); //se calcula el promedio de permanencia de un archivo por corrida
 
         ///se acumula para estadísticas totales
-        //tpromPer += promPer;
-        //cout << "Promedio de permanencia de un archivo en el sistema: " << promPer << " segundos." << endl << endl << endl;
-
-
+        /*
+        tpromPer += promPer;
+        cout << "Promedio de permanencia de un archivo en el sistema: " << promPer << " segundos." << endl << endl << endl;
         double promEnv = Est::promedioToken(&A->archivos_token, &B->archivos_token, &C-> archivos_token);
 
         tpromEnv += promEnv;
 
         cout << "Promedio de archivos enviados por turno del token: " << promEnv << endl << endl << endl;
-
-
+        */
 
         colaEventos.vaciar(); //elimina eventos viejos que no se usarán en la siguiente corrida
         //getchar();//Espera un caracter para poder revisar datos entre corridas
@@ -421,11 +415,7 @@ int main() {
         if(i != numSim -1 ) restEst();
     }
 
-    #ifdef _WIN32
-        system("cls");  //limpiar consola
-    #else
-        system("clear");  //limpiar consola
-    #endif
+    limpiarConsola();
 
     tpromcolaA = tpromcolaA / numSim;  //se calculan promedios totales
     tpromcolaB = tpromcolaB / numSim;
@@ -449,29 +439,18 @@ int main() {
     cout << "Promedio de total permanencia de un archivo en el sistema: " << tpromPer <<" segundos." << endl<<endl;
     cout << "Promedio de total archivos enviados por turno del token: " << tpromEnv << endl<<endl;
     cout << "Promedio de total revisiones por archivo: " << tpromRev << endl<<endl;
-
-
-
-
-
-
-
 }
 
 
-void restEst()                    //como las structs usadas son globales y la simulación puede correrse varias veces entonces se requiere
-{                                 //poder restaurar los valores originales de cada struct para evitar acumulación errónea de archivos entre corridas
-    A->colaArchivos1.clear();
-    A->colaArchivos2.clear();
-    A->archivos = 0;
+void restEst() {
+    colaMsgsC1.clear();
+    colapkgsC1.clear();
 
-    B->colaArchivos1.clear();
-    B->colaArchivos2.clear();
-    B->archivos = 0;
+    colaACKsC1.clear();
 
-    C->colaArchivos1.clear();
-    C->colaArchivos2.clear();
-    C->archivos = 0;
+    colaMsgsC2.clear();
+
+    colapkgsC3.clear();
 
     /*
     while(!AV->cola1.empty())     //las colas stl no tienen un clear directo, por lo que hubo que iterar
@@ -485,10 +464,14 @@ void restEst()                    //como las structs usadas son globales y la si
 
 
 
+list <mensaje*> colaMsgsC1;
+list <paquete*> colapkgsC1;
 
+list <paquete*> colaACKsC1;
 
+list <mensaje*> colaMsgsC2;
 
-
+list <paquete*> colapkgsC3;
 /// ------------------------------------------------
 
 ///                    EVENTOS
@@ -496,7 +479,17 @@ void restEst()                    //como las structs usadas son globales y la si
 /// ------------------------------------------------
 
 void llega_msg_a_C1                 () {}
-void llega_pkg_a_C1                 () {}
+void llega_pkg_a_C1                 () {
+
+    if ( A->ocupada ) {
+
+    }
+    else {  ///  Si NO esta' ocupada comptra A
+        A->ocupada = true;  //ahora lo esta'
+        colapkgsC1.push_back(*new paquete);
+    }
+
+}
 void termina_de_atender_pkg_en_C1_S1() {}
 void termina_de_atender_pkg_en_C1_S2() {}
 void llega_ACK_a_C1                 () {}

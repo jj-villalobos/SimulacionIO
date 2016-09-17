@@ -4,8 +4,6 @@
 	<vector>
 	<iostream>
 
-1474144181 
-
 1443807616 
 
 1443761828 f:\dropbox\ucr\tercer año\segundo semestre\io\new folder\simulacion\include\colap.h
@@ -151,4 +149,26 @@
 
 1443807616 source:/home/jasonanx/Descargas/src/Prob.cpp
 	"Prob.h"
+
+1474144316 source:/home/jasonanx/Descargas/IO/src/ColaP.cpp
+	"ColaP.h"
+	<vector>
+	<iostream>
+
+1474143409 /home/jasonanx/Descargas/IO/include/ColaP.h
+	<vector>
+	<utility>
+
+1443761879 source:/home/jasonanx/Descargas/IO/src/Est.cpp
+	"Est.h"
+
+1443761868 /home/jasonanx/Descargas/IO/include/Est.h
+	<list>
+
+1443807616 source:/home/jasonanx/Descargas/IO/src/Prob.cpp
+	"Prob.h"
+
+1443761917 /home/jasonanx/Descargas/IO/include/Prob.h
+	<math.h>
+	<stdlib.h>
 
