@@ -48,6 +48,7 @@ struct computadora {
 };
 
 
+
 struct paquete {
     int tamano;          //numero de paquetes
     double tiempoArribo; //hora del reloj en la que llega el archivo
@@ -56,6 +57,15 @@ struct paquete {
 struct mensaje {
     int tamano;          //numero de paquetes
     double tiempoArribo; //hora del reloj en la que llega el archivo
+};
+
+struct ventana {
+    private:
+    list <paquete*> ventana_C1;  /// ???????????????????????????
+    int counter = 0;
+
+    public:
+    bool tieneCampo () { return counter<3;}
 };
 
 struct ACK {
@@ -71,10 +81,10 @@ struct ACK {
 
 colaP colaEventos; //cola de tipo colaP, implementado por una lista de pares: double, int. El double es un tiempo y el int un tipo de evento a ejecutar
 
-/// archivo global que guarda temporalmente el archivo más recientemente enviado
+/// archivo global que guarda temporalmente el archivo mï¿½s recientemente enviado
 // archivo * enviado;
 
-double reloj = 0.0; //reloj global de la simulación
+double reloj = 0.0; //reloj global de la simulaciï¿½n
 
 static computadora
  *A = new computadora, //struct representando cada una de las computadoras, son globales
@@ -88,7 +98,7 @@ void restEst() ;
 //-------------------------------------------------------------------------------------------------------
 
 
-///estructuras de datos usadas para recolectar estadísticas a desplegar durante y después de la simulación
+///estructuras de datos usadas para recolectar estadï¿½sticas a desplegar durante y despuï¿½s de la simulaciï¿½n
 list <int> longitudA;     //guarda la longitud de la cola de la computadora A (incluyendo ambas prioridades) en cada paso de la simulacion
 list <int> longitudB;     //guarda la longitud de la cola de la computadora B (incluyendo ambas prioridades) en cada paso de la simulacion
 list <int> longitudC;     //guarda la longitud de la cola de la computadora C (incluyendo ambas prioridades) en cada paso de la simulacion
@@ -105,10 +115,10 @@ list <int> longitudAV2;   //guarda la longitud de la cola 2 del antivirus en cad
 
     /**
     metodo auxiliar a los mandarArchivo de todas las computadoras.
-    Se encarga de escoger al próximo archivo
+    Se encarga de escoger al prï¿½ximo archivo
     a enviar. Toma como criterio principal escoger al archivo
-    más grande que se pueda enviar en el presente
-    turno del token, así como la prioridad
+    mï¿½s grande que se pueda enviar en el presente
+    turno del token, asï¿½ como la prioridad
     * -- /
 archivo* elegirArchivo(computadora* com) {
     list<archivo *>::iterator it;
@@ -116,16 +126,16 @@ archivo* elegirArchivo(computadora* com) {
 
     for(it = com->colaArchivos1.begin(); it != com->colaArchivos1.end(); ++it) {
                                                         //primero se recorre la lista de prioridad 1. Ambas estan ordenadas
-                                                        //descendentemente en orden de tamaño del archivo, por lo que al
+                                                        //descendentemente en orden de tamaï¿½o del archivo, por lo que al
         double tiempoArc = (*it)->tamano * 0.5;         //encontrar un archivo que pueda ser enviado en el turno del token,
-        if(com->tiempoTok - tiempoArc >= 0)             //este será el más grande posible que pueda ser enviado. Si ninguno
+        if(com->tiempoTok - tiempoArc >= 0)             //este serï¿½ el mï¿½s grande posible que pueda ser enviado. Si ninguno
         {                                               //cabe en el turno del token entonces se pasa a la lista de prioridad 2
             elegido = *it;                              //y se itera sobre ella de la misma manera
             com->colaArchivos1.erase(it);
             break;
         }
     }
-    //solo se busca en la cola de prioridad 2 si en la cola 1 no se logró
+    //solo se busca en la cola de prioridad 2 si en la cola 1 no se logrï¿½
     if(elegido==NULL) {                                                                         //escoger un archivo exitosamente
         for(it = com->colaArchivos2.begin(); it != com->colaArchivos2.end(); ++it) {
             double tiempoArc = (*it)->tamano * 0.5;
@@ -137,17 +147,17 @@ archivo* elegirArchivo(computadora* com) {
         }
     }
 
-    return elegido;  //se devuelve el archivo escogido, dándose la posibilidad de que sea nulo, lo que significaría que: no había archivos en ninguna cola o
-}                    //ningun archivo en las colas podía ser enviado en el presente turno del token
+    return elegido;  //se devuelve el archivo escogido, dï¿½ndose la posibilidad de que sea nulo, lo que significarï¿½a que: no habï¿½a archivos en ninguna cola o
+}                    //ningun archivo en las colas podï¿½a ser enviado en el presente turno del token
 
-int calcularRevisiones(archivo * arc) //metodo auxiliar para calcular el numero de revisiones hechas sobre el archivo basándose en la cantidad de virus que tenga
+int calcularRevisiones(archivo * arc) //metodo auxiliar para calcular el numero de revisiones hechas sobre el archivo basï¿½ndose en la cantidad de virus que tenga
 {
     int rev = 0;
-    if(arc->virus == 0) //si no tenía ni un virus entonces solo se revisó una vez
+    if(arc->virus == 0) //si no tenï¿½a ni un virus entonces solo se revisï¿½ una vez
     {
         rev = 1;
     }
-    else if ( arc ->virus == 1) //si tenía 1 entonces se dieron 2 revisiones
+    else if ( arc ->virus == 1) //si tenï¿½a 1 entonces se dieron 2 revisiones
     {
         rev = 2;
     }
@@ -155,11 +165,11 @@ int calcularRevisiones(archivo * arc) //metodo auxiliar para calcular el numero 
     {
         rev = 3;
     }
-    return rev;  //devuelve cantidad de revisiones para guardarlo para las estadísticas
+    return rev;  //devuelve cantidad de revisiones para guardarlo para las estadï¿½sticas
 }
 
-void restEst()                    //como las structs usadas son globales y la simulación puede correrse varias veces entonces se requiere
-{                                 //poder restaurar los valores originales de cada struct para evitar acumulación errónea de archivos entre corridas
+void restEst()                    //como las structs usadas son globales y la simulaciï¿½n puede correrse varias veces entonces se requiere
+{                                 //poder restaurar los valores originales de cada struct para evitar acumulaciï¿½n errï¿½nea de archivos entre corridas
     A->colaArchivos1.clear();
     A->colaArchivos2.clear();
     A->archivos = 0;
@@ -207,7 +217,7 @@ static char* eventoProcesado(int i) {
 ///---------------------------EVENTOS--------------------------
 //-------------------------------------------------------------
 
-///Todos los eventos se programaron sin parámetros para que se pudieran llamar más fácilmente
+///Todos los eventos se programaron sin parï¿½metros para que se pudieran llamar mï¿½s fï¿½cilmente
 
 void llega_msg_a_C1                   (); // E1
 void llega_pkg_a_C1                   (); // E2
@@ -229,7 +239,7 @@ void se_activa_el_timer               (); // E11
 /**
  * \brief   METODO PRINCIPAL ENCARGADO DE LLAMAR A CADA EVENTO
  recibe un int des-encolado de la cola de eventos
-// para decidir cual evento ejecutar a continuación
+// para decidir cual evento ejecutar a continuaciï¿½n
  * \param
  * \return
  */
@@ -272,10 +282,32 @@ int main() {
     cout << "\nIngrese el numero de veces que quiere correr la simulacion\n>> "; cin >> numSim;
     cout << "\nIngrese la duracion maxima de la simulacion [en segundos]\n>> " ; cin >> tiempoSimulacion;
 
-    string  resp;
-    cout << endl << "Desea ver simulacion en modo lento (si/no)? \n\n"  ; cin >> resp;
+    char  resp;
+    cout << endl << "Desea ver simulacion en modo lento ( s / n )? \n\n" ;
 
-    bool lento = (resp == "si") ? true: false;
+    scanf(" %c", &resp);
+    bool lento = ( resp == 's') ? true: false;
+
+    while ( getchar() != '\n' ); /// flush
+
+
+    /*
+    while ( getchar() != '\n' ); /// flush
+
+
+    char c = getchar();
+
+
+    bool lento = (c == 's') ? true: false;
+
+    while ( getchar() != '\n' ); /// flush*/
+
+
+    //while ((c = getchar()) != '\n' && c != EOF);
+
+
+
+
 
     double tpromcolaA = 0;  ///variables para guardar promedios totales
     double tpromcolaB = 0;
@@ -328,7 +360,7 @@ int main() {
                 break;
             };
 
-            cont++;
+
 
             cout << "SIMULACION #"  <<  i+1     <<":"<<endl<<endl;
             cout << "\nEvento #"    <<  cont  ;
@@ -341,11 +373,11 @@ int main() {
 
 
 
-            /// si se desencola un evento que sobrepase la duración
-            /// solicitada, entonces se detiene la simulación
+            /// si se desencola un evento que sobrepase la duraciï¿½n
+            /// solicitada, entonces se detiene la simulaciï¿½n
 
 
-            ///se guardan longitudes de colas para las estadísticas
+            ///se guardan longitudes de colas para las estadï¿½sticas
             /*
             longitudA.push_back(A->colaArchivos1.size() + A->colaArchivos2.size());
             longitudB.push_back(B->colaArchivos1.size() + B->colaArchivos2.size());
@@ -369,7 +401,7 @@ int main() {
 
 
 
-            /// si se eligió la opción de ver la simulación en modo lento,
+            /// si se eligiï¿½ la opciï¿½n de ver la simulaciï¿½n en modo lento,
             /// se ejecuta un sleep de 2 segundo
             printf("\n[ presione ENTER para continuar ]");
 
@@ -378,13 +410,14 @@ int main() {
                 while ( getchar() != '\n');
                 fflush(stdin);
             }
+            cont++;
         }
 
         cout << "\nfin while\n";
 
         cont = 0;
 
-        double colaA = Est::promedioCola(&longitudA); //se calcula el promedio de la cola en cada simulación
+        double colaA = Est::promedioCola(&longitudA); //se calcula el promedio de la cola en cada simulaciï¿½n
 
         tpromcolaA += colaA;                          //se acumula para un promedio total
 
@@ -413,7 +446,7 @@ int main() {
 
         //double promPer = Est::promedioPermanencia(&permanencia); //se calcula el promedio de permanencia de un archivo por corrida
 
-        ///se acumula para estadísticas totales
+        ///se acumula para estadï¿½sticas totales
         /*
         tpromPer += promPer;
         cout << "Promedio de permanencia de un archivo en el sistema: " << promPer << " segundos." << endl << endl << endl;
@@ -424,12 +457,12 @@ int main() {
         cout << "Promedio de archivos enviados por turno del token: " << promEnv << endl << endl << endl;
         */
 
-        colaEventos.vaciar(); //elimina eventos viejos que no se usarán en la siguiente corrida
+        colaEventos.vaciar(); //elimina eventos viejos que no se usarï¿½n en la siguiente corrida
         //getchar();//Espera un caracter para poder revisar datos entre corridas
         //getchar();
 
         /// Restaura todas las estructuras como nuevas para su uso
-        /// en la siguiente corrida, si se está en la úlitma entonces no se hace
+        /// en la siguiente corrida, si se estï¿½ en la ï¿½litma entonces no se hace
 
         if(i != numSim -1 ) restEst();
     }
@@ -463,7 +496,7 @@ int main() {
 
 
 list <mensaje*> colaMsgsC1;
-list <paquete*> ventana_C1;  /// ????????????????????????????
+
 list <paquete*> colapkgsC1;
 
 list <paquete*> colaACKsC1;
@@ -500,7 +533,9 @@ void restEst() {
 
 /// ------------------------------------------------
 
+/* E1 */
 void llega_msg_a_C1                 () {}
+/* E2 */
 void llega_pkg_a_C1                 () {
     if ( A->ocupada ) {
 
@@ -509,14 +544,14 @@ void llega_pkg_a_C1                 () {
         A->ocupada = true;  //ahora lo esta'
         colapkgsC1.push_back( new paquete() );
         /**
-         * cuando se atiende paquete, también debe "armarse" para ser enviado y se realiza la transferencia de este a
-         * la línea de transmisión (se pone bit por bit). El tiempo promedio que se tarda en esto es de 1/2 segundo,
-         * distribución exponencial.
+         * cuando se atiende paquete, tambiï¿½n debe "armarse" para ser enviado y se realiza la transferencia de este a
+         * la lï¿½nea de transmisiï¿½n (se pone bit por bit). El tiempo promedio que se tarda en esto es de 1/2 segundo,
+         * distribuciï¿½n exponencial.
          */
         double t_armar =  Prob::exp(0.5);
 
         /**
-         * Cada paquete tiene un tiempo de propagación de 2 segundos
+         * Cada paquete tiene un tiempo de propagaciï¿½n de 2 segundos
          * y tiene una probabilidad 0.05 de perderse.
          */
         double tiempo = reloj + t_armar + 2;  ///   ???????????????????????????????
@@ -527,12 +562,45 @@ void llega_pkg_a_C1                 () {
     }
 
 }
+/* E3 */
 void termina_de_atender_msg_en_C1_S1() {}
+/* E4 */
 void termina_de_atender_pkg_en_C1_S2() {}
+/* E5 */
 void llega_ACK_a_C1                 () {}
+/* E6 */
 void llega_msg_malo_a_C1            () {}
+/* E7 */
 void llega_msg_a_C2                 () {}
+/* E8 */
 void termina_de_atender_msg_en_C2   () {}
-void llega_pkg_a_C3                 () {}
+/* E9 */
+void llega_pkg_a_C3                 () {
+    if ( C->ocupada ) {
+
+    }
+    else {  ///  Si NO esta' ocupada PC
+        C->ocupada = true;  //ahora lo esta'
+        colapkgsC1.push_back( new paquete() );
+        /**
+         * cuando se atiende paquete, tambiï¿½n debe "armarse" para ser enviado y se realiza la transferencia de este a
+         * la lï¿½nea de transmisiï¿½n (se pone bit por bit). El tiempo promedio que se tarda en esto es de 1/2 segundo,
+         * distribuciï¿½n exponencial.
+         */
+        double t_armar =  Prob::exp(0.5);
+
+        /**
+         * Cada paquete tiene un tiempo de propagaciï¿½n de 2 segundos
+         * y tiene una probabilidad 0.05 de perderse.
+         */
+        double tiempo = reloj + t_armar + 2;  ///   ???????????????????????????????
+        colaEventos.encolar(  new Event( tiempo , e_termina_de_atender_pkg_en_C1_S2 ) );
+
+        tiempo = reloj + Prob::norm(4, 0.01);
+        colaEventos.encolar(  new Event( tiempo , e_llega_pkg_a_C1 ) );
+    }
+}
+/* E10 */
 void fin_procesa_pkg_en_C3          () {}
+/* E11 */
 void se_activa_el_timer             () {}

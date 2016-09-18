@@ -1,14 +1,9 @@
 #include "Prob.h"
 
-Prob::Prob()
-{
-    //ctor
-}
+Prob::Prob(){}
 
-Prob::~Prob()
-{
-    //dtor
-}
+Prob::~Prob(){}
+
 int Prob::unif(int a, int b)
 {
      double dbun = ((double) rand() / (RAND_MAX+1)) * (b-a+1) + a;
@@ -27,7 +22,7 @@ double Prob:: norm(double med, double v)    //metodo directo o metodo Box-Muller
 
 double Prob::exp(double med) {
     double lambda = 1/med;
-    /// variable aleatoria de distribución uniforme r = R ( 0 , 1 )
+    /// variable aleatoria de distribuciï¿½n uniforme r = R ( 0 , 1 )
     double r = ((double) rand() / (RAND_MAX));
 
     double x = log(1-r)/lambda;
