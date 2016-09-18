@@ -150,12 +150,12 @@
 1443807616 source:/home/jasonanx/Descargas/src/Prob.cpp
 	"Prob.h"
 
-1474144316 source:/home/jasonanx/Descargas/IO/src/ColaP.cpp
+1474217344 source:/home/jasonanx/Descargas/IO/src/ColaP.cpp
 	"ColaP.h"
 	<vector>
 	<iostream>
 
-1474143409 /home/jasonanx/Descargas/IO/include/ColaP.h
+1474212224 /home/jasonanx/Descargas/IO/include/ColaP.h
 	<vector>
 	<utility>
 
@@ -165,10 +165,26 @@
 1443761868 /home/jasonanx/Descargas/IO/include/Est.h
 	<list>
 
-1443807616 source:/home/jasonanx/Descargas/IO/src/Prob.cpp
+1474174595 source:/home/jasonanx/Descargas/IO/src/Prob.cpp
 	"Prob.h"
 
 1443761917 /home/jasonanx/Descargas/IO/include/Prob.h
 	<math.h>
 	<stdlib.h>
+
+1474220529 source:/home/jasonanx/Descargas/IO/main.cpp
+	<unistd.h>
+	<iostream>
+	<time.h>
+	<list>
+	<math.h>
+	<stdlib.h>
+	<stdio.h>
+	<queue>
+	<io.h>
+	<unistd.h>
+	<windows.h>
+	"Prob.h"
+	"ColaP.h"
+	"Est.h"
 

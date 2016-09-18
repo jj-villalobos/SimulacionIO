@@ -19,12 +19,12 @@ class colaP {
     public:
         colaP();
         virtual ~colaP();
-        void encolar(Event);
+        void encolar(Event*);
         Event desencolar();
         bool vacio();
         void elimCambio();
         void vaciar();
-        vector<Event> heap;
+        vector<Event*> heap;
     protected:
     private:
 

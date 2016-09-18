@@ -25,11 +25,14 @@ double Prob:: norm(double med, double v)    //metodo directo o metodo Box-Muller
     return x1;
 }
 
-double Prob::exp(double med)
-{
+double Prob::exp(double med) {
     double lambda = 1/med;
+    /// variable aleatoria de distribución uniforme r = R ( 0 , 1 )
     double r = ((double) rand() / (RAND_MAX));
-    double x = log(1-r)/(lambda*-1);
+
+    double x = log(1-r)/lambda;
+    x*= -1;
+
     return x;
 }
 

@@ -27,7 +27,7 @@ using namespace std;
 enum Eventos {
     e_llega_msg_a_C1 = 1               ,
     e_llega_pkg_a_C1                   ,
-    e_termina_de_atender_pkg_en_C1_S1  ,
+    e_termina_de_atender_msg_en_C1_S1  ,
     e_termina_de_atender_pkg_en_C1_S2  ,
     e_llega_ACK_a_C1                   ,
     e_llega_msg_malo_a_C1              ,
@@ -64,8 +64,11 @@ struct ACK {
 };
 
 
-///-------------------------------------------------------------------------------------------------------
-///VARIABLES GLOBALES-------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------
+///--------------------------VARIABLES GLOBALES----------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------
+
+
 colaP colaEventos; //cola de tipo colaP, implementado por una lista de pares: double, int. El double es un tiempo y el int un tipo de evento a ejecutar
 
 /// archivo global que guarda temporalmente el archivo más recientemente enviado
@@ -80,10 +83,10 @@ static computadora
 
 void restEst() ;
 
+//-------------------------------------------------------------------------------------------------------
+///--------------------------ESTADISTICAS----------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------
 
-///------------------------------------------------------------------------------------------------------
-///------------------------------------------------------------------------------------------------------
-///ESTADISTICAS------------------------------------------------------------------------------------------
 
 ///estructuras de datos usadas para recolectar estadísticas a desplegar durante y después de la simulación
 list <int> longitudA;     //guarda la longitud de la cola de la computadora A (incluyendo ambas prioridades) en cada paso de la simulacion
@@ -92,9 +95,11 @@ list <int> longitudC;     //guarda la longitud de la cola de la computadora C (i
 list <int> longitudAV1;   //guarda la longitud de la cola 1 del antivirus en cada paso de la simulacion
 list <int> longitudAV2;   //guarda la longitud de la cola 2 del antivirus en cada paso de la simulacion
 
-///------------------------------------------------------------------------------------------------------
-///METODOS AUXILIARES PARA LA IMPLEMENTACION DE LOS EVENTOS----------------------------------------------
 
+
+//-------------------------------------------------------------------------------------------------------
+///METODOS AUXILIARES PARA LA IMPLEMENTACION DE LOS EVENTOS----------------------------------------------
+//-------------------------------------------------------------------------------------------------------
 
 /*
 
@@ -179,7 +184,7 @@ void restEst()                    //como las structs usadas son globales y la si
 */
 
 ///> nombres delos eventos
-static string eventos [] = {
+static char* eventos [] = {
     "llega msg a C1",
     "llega pkg a C1",
     "termina de atender pkg en C1 S1",
@@ -193,8 +198,8 @@ static string eventos [] = {
     "se activa el timer"
 };
 
-static string eventoProcesado(int i) {
-    return eventos[i];
+static char* eventoProcesado(int i) {
+    return eventos[i-1];
 }
 
 
@@ -206,7 +211,7 @@ static string eventoProcesado(int i) {
 
 void llega_msg_a_C1                   (); // E1
 void llega_pkg_a_C1                   (); // E2
-void termina_de_atender_pkg_en_C1_S1  (); // E3
+void termina_de_atender_msg_en_C1_S1  (); // E3
 void termina_de_atender_pkg_en_C1_S2  (); // E4
 void llega_ACK_a_C1                   (); // E5
 void llega_msg_malo_a_C1              (); // E6
@@ -229,10 +234,11 @@ void se_activa_el_timer               (); // E11
  * \return
  */
 void ejecutarEvento(int i) {
+    printf("\n--Ejecutando evento %s\n", eventoProcesado(i) );
     switch (i){
         case 1 : {llega_msg_a_C1                 (); break;}
         case 2 : {llega_pkg_a_C1                 (); break;}
-        case 3 : {termina_de_atender_pkg_en_C1_S1(); break;}
+        case 3 : {termina_de_atender_msg_en_C1_S1(); break;}
         case 4 : {termina_de_atender_pkg_en_C1_S2(); break;}
         case 5 : {llega_ACK_a_C1                 (); break;}
         case 6 : {llega_msg_malo_a_C1            (); break;}
@@ -259,14 +265,12 @@ int main() {
     srand(time(NULL));
     ///> semilla, necesaria para las funciones de probabilidad
 
-    int numSim,
-        tSim  ; ///> tiempo ma´ximo que puede durar la simulacio´n
+    double
+        numSim,
+        tiempoSimulacion ;
 
-    cout << "Ingrese el numero de veces que quiere correr la simulacion.\n\n"; cin >> numSim;
-    cout  << endl << "Ingrese la duracion maxima de \n la simulacion [en segundos]\n\n"; cin >> tSim;
-
-    double tiempoSimulacion = (int) tSim;
-
+    cout << "\nIngrese el numero de veces que quiere correr la simulacion\n>> "; cin >> numSim;
+    cout << "\nIngrese la duracion maxima de la simulacion [en segundos]\n>> " ; cin >> tiempoSimulacion;
 
     string  resp;
     cout << endl << "Desea ver simulacion en modo lento (si/no)? \n\n"  ; cin >> resp;
@@ -299,9 +303,9 @@ int main() {
 
 
 
-        colaEventos.encolar( * new Event(0.0, e_llega_msg_a_C1 ) );
+        colaEventos.encolar(  new Event(0.0, e_llega_msg_a_C1 ) );
 
-        colaEventos.encolar( * new Event(0.0, e_llega_pkg_a_C1 ) );
+        colaEventos.encolar(  new Event(0.0, e_llega_pkg_a_C1 ) );
 
 
 
@@ -319,18 +323,27 @@ int main() {
             /// reloj = tiempo del evento que va a ocurrir
             reloj = event.time;
 
+            if( event.time > tiempoSimulacion) {
+                cout << "\nse ha acabado el tiempo\n";
+                break;
+            };
+
+            cont++;
+
+            cout << "SIMULACION #"  <<  i+1     <<":"<<endl<<endl;
+            cout << "\nEvento #"    <<  cont  ;
+            cout << "\t|\tReloj: "     <<  reloj  << endl ;
+            cout << "\nCantidad de eventos encolados: " << colaEventos.heap.size() << endl;
             ejecutarEvento( event.id ); ///ejecuta el evento con la tabla de eventos
+
+
+            /// cout << endl <<"La computadora con el token es la maquina: "<< TokenHolder->id << endl;
+
 
 
             /// si se desencola un evento que sobrepase la duración
             /// solicitada, entonces se detiene la simulación
 
-            if( event.time > tiempoSimulacion) break;
-
-            cont++;
-
-            cout << "SIMULACION #"<<i+1<<":"<<endl<<endl;
-            cout << "Evento #"<<cont<<endl;
 
             ///se guardan longitudes de colas para las estadísticas
             /*
@@ -342,10 +355,6 @@ int main() {
             //longitudAV2.push_back(AV->cola2.size());
             */
 
-            cout << "\nReloj: "<< reloj << endl;
-            /// cout << endl <<"La computadora con el token es la maquina: "<< TokenHolder->id << endl;
-
-            cout << endl <<"Evento procesado actualmente: "<< eventoProcesado( event.id  ) << endl;
 
             /*
             cout << endl <<"Longitud cola archivos prioridad 1 de A: "<< A->colaArchivos1.size()<< endl;
@@ -358,10 +367,20 @@ int main() {
             cout <<        "Longitud cola archivos prioridad 2 de C: "<< C->colaArchivos2.size()<< endl;
             */
 
-            cout << "Cantidad de eventos encolados: " << colaEventos.heap.size() << endl;
 
-            if( lento) sleep(1000); //si se eligió la opción de ver la simulación en modo lento, se ejecuta un sleep de 1 segundo
+
+            /// si se eligió la opción de ver la simulación en modo lento,
+            /// se ejecuta un sleep de 2 segundo
+            printf("\n[ presione ENTER para continuar ]");
+
+            if( lento) {
+                fflush(stdin);
+                while ( getchar() != '\n');
+                fflush(stdin);
+            }
         }
+
+        cout << "\nfin while\n";
 
         cont = 0;
 
@@ -442,6 +461,17 @@ int main() {
 }
 
 
+
+list <mensaje*> colaMsgsC1;
+list <paquete*> ventana_C1;  /// ????????????????????????????
+list <paquete*> colapkgsC1;
+
+list <paquete*> colaACKsC1;
+
+list <mensaje*> colaMsgsC2;
+
+list <paquete*> colapkgsC3;
+
 void restEst() {
     colaMsgsC1.clear();
     colapkgsC1.clear();
@@ -464,14 +494,6 @@ void restEst() {
 
 
 
-list <mensaje*> colaMsgsC1;
-list <paquete*> colapkgsC1;
-
-list <paquete*> colaACKsC1;
-
-list <mensaje*> colaMsgsC2;
-
-list <paquete*> colapkgsC3;
 /// ------------------------------------------------
 
 ///                    EVENTOS
@@ -480,17 +502,32 @@ list <paquete*> colapkgsC3;
 
 void llega_msg_a_C1                 () {}
 void llega_pkg_a_C1                 () {
-
     if ( A->ocupada ) {
 
     }
-    else {  ///  Si NO esta' ocupada comptra A
+    else {  ///  Si NO esta' ocupada PC A
         A->ocupada = true;  //ahora lo esta'
-        colapkgsC1.push_back(*new paquete);
+        colapkgsC1.push_back( new paquete() );
+        /**
+         * cuando se atiende paquete, también debe "armarse" para ser enviado y se realiza la transferencia de este a
+         * la línea de transmisión (se pone bit por bit). El tiempo promedio que se tarda en esto es de 1/2 segundo,
+         * distribución exponencial.
+         */
+        double t_armar =  Prob::exp(0.5);
+
+        /**
+         * Cada paquete tiene un tiempo de propagación de 2 segundos
+         * y tiene una probabilidad 0.05 de perderse.
+         */
+        double tiempo = reloj + t_armar + 2;  ///   ???????????????????????????????
+        colaEventos.encolar(  new Event( tiempo , e_termina_de_atender_pkg_en_C1_S2 ) );
+
+        tiempo = reloj + Prob::norm(4, 0.01);
+        colaEventos.encolar(  new Event( tiempo , e_llega_pkg_a_C1 ) );
     }
 
 }
-void termina_de_atender_pkg_en_C1_S1() {}
+void termina_de_atender_msg_en_C1_S1() {}
 void termina_de_atender_pkg_en_C1_S2() {}
 void llega_ACK_a_C1                 () {}
 void llega_msg_malo_a_C1            () {}
