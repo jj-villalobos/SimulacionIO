@@ -4,11 +4,12 @@ Prob::Prob(){}
 
 Prob::~Prob(){}
 
-int Prob::unif(int a, int b)
-{
-     double dbun = ((double) rand() / (RAND_MAX+1)) * (b-a+1) + a;
-     int intun = (int) dbun;
-     return intun;
+int Prob::unif(int range_from, int range_to) {
+    std::random_device                  rand_dev;
+    std::mt19937                        generator(rand_dev());
+    std::uniform_int_distribution<int>  distr(range_from, range_to);
+    
+    return distr(generator);
 }
 
 double Prob:: norm(double med, double v)    //metodo directo o metodo Box-Muller

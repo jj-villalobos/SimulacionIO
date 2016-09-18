@@ -24,6 +24,12 @@
 #include "Est.h"
 using namespace std;
 
+
+//-------------------------------------------------------------------------------------------------------
+///--------------------------Atributos de la clase-------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------
+
+
 enum Eventos {
     e_llega_msg_a_C1 = 1               ,
     e_llega_pkg_a_C1                   ,
@@ -39,57 +45,64 @@ enum Eventos {
 };
 
 
-/// ESTRUCTURAS USADAS PARA MODELAR LA SOLUCION------------------------------
+// estructuras ------------------------------
 
-struct computadora {
-    char id;                        //identificador para referenciar a la computadora
-    int archivos = 0;               //numero archivos enviados en el turno presente
-    bool ocupada = false;
+struct Computadora {
+    char id;                        //identificador para referenciar a la Computadora
+    bool ocupada;
 };
 
-
-
-struct paquete {
-    int tamano;          //numero de paquetes
-    double tiempoArribo; //hora del reloj en la que llega el archivo
+struct Pkg {
+    int tamano;          //numero de Pkgs
+    double tiempoArribo; //hora del Reloj en la que llega el archivo
 };
 
-struct mensaje {
-    int tamano;          //numero de paquetes
-    double tiempoArribo; //hora del reloj en la que llega el archivo
+struct Msg {
+    int tamano;          //numero de Pkgs
+    double tiempoArribo; //hora del Reloj en la que llega el archivo
 };
 
-struct ventana {
+struct Ventana {
+    public:
+     Ventana () {
+        counter = 0 ;    
+    }
     private:
-    list <paquete*> ventana_C1;  /// ???????????????????????????
-    int counter = 0;
+    list <Pkg*> Ventana_C1;  /// ???????????????????????????
+    int counter ;
 
     public:
     bool tieneCampo () { return counter<3;}
 };
 
 struct ACK {
-    int id;          //numero de paquetes
-    double tiempoArribo; //hora del reloj en la que llega el archivo
+    int id;          //numero de Pkgs
+    double tiempoArribo; //hora del Reloj en la que llega el archivo
 };
 
 
-//-------------------------------------------------------------------------------------------------------
-///--------------------------VARIABLES GLOBALES----------------------------------------------------------
-//-------------------------------------------------------------------------------------------------------
+//--------------------------variables globales--------------------------------------
 
 
-colaP colaEventos; //cola de tipo colaP, implementado por una lista de pares: double, int. El double es un tiempo y el int un tipo de evento a ejecutar
 
-/// archivo global que guarda temporalmente el archivo m�s recientemente enviado
-// archivo * enviado;
+list <Msg*> colaMsgsC1;
 
-double reloj = 0.0; //reloj global de la simulaci�n
+list <Pkg*> colapkgsC1;
 
-static computadora
- *A = new computadora, //struct representando cada una de las computadoras, son globales
- *B = new computadora,
- *C = new computadora;
+list <ACK*> colaACKsC1;
+
+list <Msg*> colaMsgsC2;
+
+list <Pkg*> colapkgsC3;
+
+colaP colaEventos; //> La lista/cola de eventos
+
+double Reloj = 0.0; //Reloj global de la simulacion
+
+static Computadora
+ *A = new Computadora, //struct representando cada una de las Computadoras, son globales
+ *B = new Computadora,
+ *C = new Computadora;
 
 void restEst() ;
 
@@ -99,9 +112,9 @@ void restEst() ;
 
 
 ///estructuras de datos usadas para recolectar estad�sticas a desplegar durante y despu�s de la simulaci�n
-list <int> longitudA;     //guarda la longitud de la cola de la computadora A (incluyendo ambas prioridades) en cada paso de la simulacion
-list <int> longitudB;     //guarda la longitud de la cola de la computadora B (incluyendo ambas prioridades) en cada paso de la simulacion
-list <int> longitudC;     //guarda la longitud de la cola de la computadora C (incluyendo ambas prioridades) en cada paso de la simulacion
+list <int> longitudA;     //guarda la longitud de la cola de la Computadora A (incluyendo ambas prioridades) en cada paso de la simulacion
+list <int> longitudB;     //guarda la longitud de la cola de la Computadora B (incluyendo ambas prioridades) en cada paso de la simulacion
+list <int> longitudC;     //guarda la longitud de la cola de la Computadora C (incluyendo ambas prioridades) en cada paso de la simulacion
 list <int> longitudAV1;   //guarda la longitud de la cola 1 del antivirus en cada paso de la simulacion
 list <int> longitudAV2;   //guarda la longitud de la cola 2 del antivirus en cada paso de la simulacion
 
@@ -114,13 +127,13 @@ list <int> longitudAV2;   //guarda la longitud de la cola 2 del antivirus en cad
 /*
 
     /**
-    metodo auxiliar a los mandarArchivo de todas las computadoras.
-    Se encarga de escoger al pr�ximo archivo
+    metodo auxiliar a los mandarArchivo de todas las Computadoras.
+    Se encarga de escoger al proximo archivo
     a enviar. Toma como criterio principal escoger al archivo
     m�s grande que se pueda enviar en el presente
     turno del token, as� como la prioridad
     * -- /
-archivo* elegirArchivo(computadora* com) {
+archivo* elegirArchivo(Computadora* com) {
     list<archivo *>::iterator it;
     archivo* elegido = NULL;
 
@@ -193,22 +206,21 @@ void restEst()                    //como las structs usadas son globales y la si
 }
 */
 
-///> nombres delos eventos
-static char* eventos [] = {
-    "llega msg a C1",
-    "llega pkg a C1",
-    "termina de atender pkg en C1 S1",
-    "termina de atender pkg en C1 S2",
-    "llega ACK a C1",
-    "llega msg malo a C1",
-    "llega msg a C1",
-    "termina de atender msg en C2",
-    "llega pkg a C3",
-    "fin procesa pkg en C3",
-    "se activa el timer"
-};
-
-static char* eventoProcesado(int i) {
+static const char* eventoProcesado(int i) {
+    ///> nombres de los eventos
+    const char* eventos [] = {
+        "llega msg a C1",
+        "llega pkg a C1",
+        "termina de atender pkg en C1 S1",
+        "termina de atender pkg en C1 S2",
+        "llega ACK a C1",
+        "llega msg malo a C1",
+        "llega msg a C1",
+        "termina de atender msg en C2",
+        "llega pkg a C3",
+        "fin procesa pkg en C3",
+        "se activa el timer"
+    };
     return eventos[i-1];
 }
 
@@ -217,15 +229,13 @@ static char* eventoProcesado(int i) {
 ///---------------------------EVENTOS--------------------------
 //-------------------------------------------------------------
 
-///Todos los eventos se programaron sin par�metros para que se pudieran llamar m�s f�cilmente
-
 void llega_msg_a_C1                   (); // E1
 void llega_pkg_a_C1                   (); // E2
 void termina_de_atender_msg_en_C1_S1  (); // E3
 void termina_de_atender_pkg_en_C1_S2  (); // E4
 void llega_ACK_a_C1                   (); // E5
 void llega_msg_malo_a_C1              (); // E6
-void llega_msg_a_C1                   (); // E7
+void llega_msg_a_C2                   (); // E7
 void termina_de_atender_msg_en_C2     (); // E8
 void llega_pkg_a_C3                   (); // E9
 void fin_procesa_pkg_en_C3            (); // E10
@@ -237,11 +247,9 @@ void se_activa_el_timer               (); // E11
 
 
 /**
- * \brief   METODO PRINCIPAL ENCARGADO DE LLAMAR A CADA EVENTO
- recibe un int des-encolado de la cola de eventos
-// para decidir cual evento ejecutar a continuaci�n
- * \param
- * \return
+ * Llama a cada evento
+ * recibe un int des-encolado de la cola de eventos
+ * para decidir cual evento ejecutar a continuacion
  */
 void ejecutarEvento(int i) {
     printf("\n--Ejecutando evento %s\n", eventoProcesado(i) );
@@ -252,7 +260,7 @@ void ejecutarEvento(int i) {
         case 4 : {termina_de_atender_pkg_en_C1_S2(); break;}
         case 5 : {llega_ACK_a_C1                 (); break;}
         case 6 : {llega_msg_malo_a_C1            (); break;}
-        case 7 : {llega_msg_a_C1                 (); break;}  /// ojo malo
+        case 7 : {llega_msg_a_C2                 (); break;}  /// ojo malo
         case 8 : {termina_de_atender_msg_en_C2   (); break;}
         case 9 : {llega_pkg_a_C3                 (); break;}
         case 10: {fin_procesa_pkg_en_C3          (); break;}
@@ -275,6 +283,9 @@ int main() {
     srand(time(NULL));
     ///> semilla, necesaria para las funciones de probabilidad
 
+    for (int i = 0; i < 10; ++i)
+        std::cout << Prob::unif(3,7) << '\n';
+
     double
         numSim,
         tiempoSimulacion ;
@@ -289,6 +300,8 @@ int main() {
     bool lento = ( resp == 's') ? true: false;
 
     while ( getchar() != '\n' ); /// flush
+
+    
 
 
     /*
@@ -352,8 +365,8 @@ int main() {
             /// tomar el siguiente evento en la cola
             Event event = colaEventos.desencolar();
 
-            /// reloj = tiempo del evento que va a ocurrir
-            reloj = event.time;
+            /// Reloj = tiempo del evento que va a ocurrir
+            Reloj = event.time;
 
             if( event.time > tiempoSimulacion) {
                 cout << "\nse ha acabado el tiempo\n";
@@ -364,12 +377,12 @@ int main() {
 
             cout << "SIMULACION #"  <<  i+1     <<":"<<endl<<endl;
             cout << "\nEvento #"    <<  cont  ;
-            cout << "\t|\tReloj: "     <<  reloj  << endl ;
+            cout << "\t|\tReloj: "     <<  Reloj  << endl ;
             cout << "\nCantidad de eventos encolados: " << colaEventos.heap.size() << endl;
             ejecutarEvento( event.id ); ///ejecuta el evento con la tabla de eventos
 
 
-            /// cout << endl <<"La computadora con el token es la maquina: "<< TokenHolder->id << endl;
+            /// cout << endl <<"La Computadora con el token es la maquina: "<< TokenHolder->id << endl;
 
 
 
@@ -438,9 +451,9 @@ int main() {
         tpromcolaAV2 += cola2AV;
 
         cout << "Estadisticas corrida #"<< i+1 << endl << endl;
-        cout << "Longitud promedio de  cola en computadora A: " << colaA << endl << endl;
-        cout << "Longitud promedio de cola en computadora B: " << colaB << endl << endl;
-        cout << "Longitud promedio de cola en computadora C: " << colaC << endl << endl;
+        cout << "Longitud promedio de  cola en Computadora A: " << colaA << endl << endl;
+        cout << "Longitud promedio de cola en Computadora B: " << colaB << endl << endl;
+        cout << "Longitud promedio de cola en Computadora C: " << colaC << endl << endl;
         cout << "Longitud promedio de cola 1 en servidor de antivirus: " << cola1AV << endl << endl;
         cout << "Longitud promedio de cola 2 en servidor de antivirus: " << cola2AV << endl << endl << endl;
 
@@ -480,9 +493,9 @@ int main() {
 
     cout << "ESTADISTICAS TOTALES: " << endl << endl;  //se muestran finalmente los promedios totales de todas las corridas
 
-    cout<< "Longitud promedio total de cola en computadora A: " << tpromcolaA << endl << endl;
-    cout<< "Longitud promedio total de cola en computadora B: " << tpromcolaB << endl << endl;
-    cout<< "Longitud promedio total de cola en computadora C: " << tpromcolaC << endl << endl;
+    cout<< "Longitud promedio total de cola en Computadora A: " << tpromcolaA << endl << endl;
+    cout<< "Longitud promedio total de cola en Computadora B: " << tpromcolaB << endl << endl;
+    cout<< "Longitud promedio total de cola en Computadora C: " << tpromcolaC << endl << endl;
     cout<< "Longitud promedio total de cola 1 en servidor de antivirus: " << tpromcolaAV1 << endl << endl;
     cout<< "Longitud promedio total de cola 2 en servidor de antivirus: " << tpromcolaAV2 << endl << endl;
 
@@ -493,17 +506,6 @@ int main() {
     cout << "Promedio de total revisiones por archivo: " << tpromRev << endl<<endl;
 }
 
-
-
-list <mensaje*> colaMsgsC1;
-
-list <paquete*> colapkgsC1;
-
-list <paquete*> colaACKsC1;
-
-list <mensaje*> colaMsgsC2;
-
-list <paquete*> colapkgsC3;
 
 void restEst() {
     colaMsgsC1.clear();
@@ -542,22 +544,22 @@ void llega_pkg_a_C1                 () {
     }
     else {  ///  Si NO esta' ocupada PC A
         A->ocupada = true;  //ahora lo esta'
-        colapkgsC1.push_back( new paquete() );
+        colapkgsC1.push_back( new Pkg() );
         /**
-         * cuando se atiende paquete, tambi�n debe "armarse" para ser enviado y se realiza la transferencia de este a
+         * cuando se atiende Pkg, tambi�n debe "armarse" para ser enviado y se realiza la transferencia de este a
          * la l�nea de transmisi�n (se pone bit por bit). El tiempo promedio que se tarda en esto es de 1/2 segundo,
          * distribuci�n exponencial.
          */
-        double t_armar =  Prob::exp(0.5);
+        double t_atender =  Prob::exp(0.5);
 
         /**
-         * Cada paquete tiene un tiempo de propagaci�n de 2 segundos
+         * Cada Pkg tiene un tiempo de propagaci�n de 2 segundos
          * y tiene una probabilidad 0.05 de perderse.
          */
-        double tiempo = reloj + t_armar + 2;  ///   ???????????????????????????????
+        double tiempo = Reloj + t_atender + 2;  ///   ???????????????????????????????
         colaEventos.encolar(  new Event( tiempo , e_termina_de_atender_pkg_en_C1_S2 ) );
 
-        tiempo = reloj + Prob::norm(4, 0.01);
+        tiempo = Reloj + Prob::norm(4, 0.01);
         colaEventos.encolar(  new Event( tiempo , e_llega_pkg_a_C1 ) );
     }
 
@@ -581,22 +583,17 @@ void llega_pkg_a_C3                 () {
     }
     else {  ///  Si NO esta' ocupada PC
         C->ocupada = true;  //ahora lo esta'
-        colapkgsC1.push_back( new paquete() );
-        /**
-         * cuando se atiende paquete, tambi�n debe "armarse" para ser enviado y se realiza la transferencia de este a
-         * la l�nea de transmisi�n (se pone bit por bit). El tiempo promedio que se tarda en esto es de 1/2 segundo,
-         * distribuci�n exponencial.
-         */
-        double t_armar =  Prob::exp(0.5);
+        colapkgsC1.push_back( new Pkg() );
 
-        /**
-         * Cada paquete tiene un tiempo de propagaci�n de 2 segundos
-         * y tiene una probabilidad 0.05 de perderse.
-         */
-        double tiempo = reloj + t_armar + 2;  ///   ???????????????????????????????
-        colaEventos.encolar(  new Event( tiempo , e_termina_de_atender_pkg_en_C1_S2 ) );
 
-        tiempo = reloj + Prob::norm(4, 0.01);
+
+        double t_atender =  Prob::norm(1.5, 0.01);
+
+        double tiempo = Reloj + t_atender;
+
+        colaEventos.encolar(  new Event( tiempo , e_fin_procesa_pkg_en_C3 ) );
+
+        tiempo = Reloj + Prob::norm(4, 0.01);
         colaEventos.encolar(  new Event( tiempo , e_llega_pkg_a_C1 ) );
     }
 }

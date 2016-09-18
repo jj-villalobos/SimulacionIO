@@ -1,6 +1,4 @@
 #include "ColaP.h"
-#include <vector>
-#include <iostream>
 
 using namespace std;
 
@@ -19,14 +17,14 @@ void colaP::elimCambio(){   //elimina el evento "cambiar token" de la cola
     }
 }
 
-bool colaP::vacio()     //retorna si la cola de eventos se encuentra vacía o no
+bool colaP::vacio()     //retorna si la cola de eventos se encuentra vacï¿½a o no
 {
     return heap.empty();
 }
 
 /** inserta un elemento y ordena la cola por tiempo: de menor a mayor*/
 void colaP::encolar(Event* even){
-    bool insertado = false;     //control de inserción
+    bool insertado = false;     //control de inserciï¿½n
 
     if( vacio() ) {
         heap.push_back(even);
@@ -35,7 +33,7 @@ void colaP::encolar(Event* even){
     else {
         for(vector<Event*>::iterator it = heap.begin(); it != heap.end(); it++){
             if((*it)->time < even->time) {
-            /// cuando encuentre un evento con mayor tiempo, inserta el evento actual (así mantiene el orden)
+            /// cuando encuentre un evento con mayor tiempo, inserta el evento actual (asï¿½ mantiene el orden)
                 heap.insert(it, even);
                 insertado = true;
                 break;
@@ -54,7 +52,7 @@ Event colaP::desencolar(){     //desencola el evento con tiempo menor
     return *X;
 }
 
-void colaP::vaciar()        //vacía la cola
+void colaP::vaciar()        //vacï¿½a la cola
 {
     heap.clear();
 }

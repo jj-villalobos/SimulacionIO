@@ -1,5 +1,6 @@
 #include <math.h>
 #include <stdlib.h>
+#include <random>
 #define pi 3.1415926535
 #ifndef PROB_H
 #define PROB_H

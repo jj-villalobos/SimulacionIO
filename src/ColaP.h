@@ -2,10 +2,9 @@
 #define COLAP_H
 #include <vector>
 #include <utility>
+#include <iostream>
 
 using namespace std;
-
-//typedef pair<double,int> evento;
 
 struct Event {
     Event (double t, int i) {
@@ -17,17 +16,17 @@ struct Event {
 
 class colaP {
     public:
+        virtual 
+        ~colaP();
         colaP();
-        virtual ~colaP();
-        void encolar(Event*);
-        Event desencolar();
         bool vacio();
+        void encolar(Event*);
         void elimCambio();
         void vaciar();
+        Event desencolar();
         vector<Event*> heap;
     protected:
     private:
-
 };
 
 #endif // COLAP_H
