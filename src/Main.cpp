@@ -31,8 +31,9 @@ list <Pkg*> colapkgsC3;
 
 /* E1 */
 void llega_msg_a_C1                 () {
+    Msg* m new Msg();
     if ( A->ocupada ) {
-        colaMsgsC1.push_back( new Msg() );
+        colaMsgsC1.push_back(m);
     }
     else {  ///  Si NO esta' ocupada PC A
         A->ocupada = true;  //atender ya mismo
@@ -93,6 +94,7 @@ void llega_pkg_a_C1                 () {
 /* E3 */
 void termina_de_atender_msg_en_C1_S1() {
     A->ocupada = false;  // ??????????  A S1   ,   A S2
+    //
     double tiempo = Reloj + 3;
     colaEventos.encolar(  new Event( tiempo , e_llega_msg_a_C2 ) );
 }
