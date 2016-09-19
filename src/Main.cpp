@@ -48,6 +48,7 @@ void llega_msg_a_C1                 () {
     double tiempo = Reloj + Prob::norm(4, 0.01);
     colaEventos.encolar(  new Event( tiempo , e_llega_msg_a_C1 ) );
 }
+
 /* E2 */
 int secuenciaC1=0,
     EnviadosSinAck = 0; // enviados sin ack
@@ -94,8 +95,9 @@ void llega_pkg_a_C1                 () {
 /* E3 */
 void termina_de_atender_msg_en_C1_S1() {
     A->ocupada = false;  // ??????????  A S1   ,   A S2
-    //
+    //tirar tiempo de atencion (funcion rara que hace falta)
     double tiempo = Reloj + 3;
+    //mandar mensaje a C2 y desencolar mensaje de C1
     colaEventos.encolar(  new Event( tiempo , e_llega_msg_a_C2 ) );
 }
 /* E4 */
@@ -111,8 +113,13 @@ void llega_msg_malo_a_C1            () {}
 /* E7 */
 void llega_msg_a_C2                 () {}
 /* E8 */
+/* igual que E1*/
 void termina_de_atender_msg_en_C2   () {}
 /* E9 */
+/* Tirar probabilidad de que mensaje sea malo
+    tirar tiempo de atencion
+    si hay error en mensaje, devuelve mensaje a c1
+    si no hay error mata mensaje*/
 void llega_pkg_a_C3                 () {
     
     if ( C->ocupada ) {
