@@ -4,16 +4,18 @@ Prob::Prob(){}
 
 Prob::~Prob(){}
 
+std::random_device                  rand_dev;
+std::mt19937                        generator(rand_dev());
+
 int Prob::unif(int range_from, int range_to) {
-    std::random_device                  rand_dev;
-    std::mt19937                        generator(rand_dev());
+    // tomado de coliru.stacked-crooked.com/a/c5b94870fdcd13f2
     std::uniform_int_distribution<int>  distr(range_from, range_to);
     
     return distr(generator);
 }
 
-double Prob:: norm(double med, double v)    //metodo directo o metodo Box-Muller
-{
+double Prob:: norm(double med, double v) {
+ //metodo directo o metodo Box-Muller
     double r1 = ((double) rand() / (RAND_MAX));
     double r2 = ((double) rand() / (RAND_MAX));
     double z1 = sqrt(-2*log(r1))*cos(2*pi*r2);
@@ -32,9 +34,11 @@ double Prob::exp(double med) {
     return x;
 }
 
-double Prob::disB()
-{   double r = ((double) rand() / (RAND_MAX));
+double Prob::disB() {   double r = ((double) rand() / (RAND_MAX));
     double x = sqrt(80*r + 64);
     return x;
 }
 
+
+// integrate 2x/3 from 1 to 2 = 1
+// integrate 2x/3             = 

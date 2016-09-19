@@ -1,88 +1,15 @@
-#include <unistd.h> // sleep
-#include <iostream>
-#include <time.h>
-#include <list>
-#include <math.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <queue>
-
-#ifdef _WIN32
-#include <io.h>
-#else
-#include <unistd.h>
-#endif
-
-/*
-#if _WIN32
-#include <windows.h>
-#endif // _WIN32
-*/
-
-#include "Prob.h"
-#include "ColaP.h"
-#include "Est.h"
-using namespace std;
-
-
-//-------------------------------------------------------------------------------------------------------
-///--------------------------Atributos de la clase-------------------------------------------------------
-//-------------------------------------------------------------------------------------------------------
-
-
-enum Eventos {
-    e_llega_msg_a_C1 = 1               ,
-    e_llega_pkg_a_C1                   ,
-    e_termina_de_atender_msg_en_C1_S1  ,
-    e_termina_de_atender_pkg_en_C1_S2  ,
-    e_llega_ACK_a_C1                   ,
-    e_llega_msg_malo_a_C1              ,
-    e_llega_msg_a_C2                   ,
-    e_termina_de_atender_msg_en_C2     ,
-    e_llega_pkg_a_C3                   ,
-    e_fin_procesa_pkg_en_C3            ,
-    e_se_activa_el_timer
-};
-
-
-// estructuras ------------------------------
-
-struct Computadora {
-    char id;                        //identificador para referenciar a la Computadora
-    bool ocupada;
-};
-
-struct Pkg {
-    int tamano;          //numero de Pkgs
-    double tiempoArribo; //hora del Reloj en la que llega el archivo
-};
-
-struct Msg {
-    int tamano;          //numero de Pkgs
-    double tiempoArribo; //hora del Reloj en la que llega el archivo
-};
-
-struct Ventana {
-    public:
-     Ventana () {
-        counter = 0 ;    
-    }
-    private:
-    list <Pkg*> Ventana_C1;  /// ???????????????????????????
-    int counter ;
-
-    public:
-    bool tieneCampo () { return counter<3;}
-};
-
-struct ACK {
-    int id;          //numero de Pkgs
-    double tiempoArribo; //hora del Reloj en la que llega el archivo
-};
-
+#include "Main.h"
+  
 
 //--------------------------variables globales--------------------------------------
 
+
+colaP colaEventos; //> La lista/cola de eventos
+
+static Computadora
+ *A = new Computadora, //struct representando cada una de las Computadoras, son globales
+ *B = new Computadora,
+ *C = new Computadora;
 
 
 list <Msg*> colaMsgsC1;
@@ -95,23 +22,140 @@ list <Msg*> colaMsgsC2;
 
 list <Pkg*> colapkgsC3;
 
-colaP colaEventos; //> La lista/cola de eventos
 
-double Reloj = 0.0; //Reloj global de la simulacion
+/// ------------------------------------------------
 
-static Computadora
- *A = new Computadora, //struct representando cada una de las Computadoras, son globales
- *B = new Computadora,
- *C = new Computadora;
+///                    EVENTOS
 
-void restEst() ;
+/// ------------------------------------------------
+
+/* E1 */
+void llega_msg_a_C1                 () {
+    if ( A->ocupada ) {
+        colaMsgsC1.push_back( new Msg() );
+    }
+    else {  ///  Si NO esta' ocupada PC A
+        A->ocupada = true;  //atender ya mismo
+
+        double t_atender =  Prob::exp(0.5);
+
+        double tiempo = Reloj + t_atender;  ///   ???????????????????????????????
+        colaEventos.encolar(  new Event( tiempo , e_termina_de_atender_pkg_en_C1_S2 ) );
+
+    }
+    // llegada de siguiente msg
+    double tiempo = Reloj + Prob::norm(4, 0.01);
+    colaEventos.encolar(  new Event( tiempo , e_llega_msg_a_C1 ) );
+}
+/* E2 */
+int secuenciaC1=0,
+    EnviadosSinAck = 0; // enviados sin ack
+bool hayCampoVentana() {
+    // tamanyo ventana = 4
+    if ( EnviadosSinAck < 4 ) {
+        // se asume que cuando esta Fn retorne, 
+        // se envio un pkg sin ack
+        EnviadosSinAck++;
+        return true;
+    }
+    return false;
+
+}
+
+void llega_pkg_a_C1                 () {
+    // ------------------------------------
+    Pkg* p = new Pkg();
+    p->id = secuenciaC1;
+
+    secuenciaC1++;
+    if (secuenciaC1>99) { secuenciaC1 = 0; }
+    // ------------------------------------
+    
+    if ( A->ocupada ) {
+        colapkgsC1.push_back(p);
+    }
+    else {  ///  Si NO esta' ocupada PC A
+        if ( hayCampoVentana() ) {
+            A->ocupada = true;  //atender ya mismo
+
+            //cua'nto va a durar en atenderlo
+            double t_atender =  Prob::exp(0.5);
+            double tiempo = Reloj + t_atender;  
+            colaEventos.encolar(  new Event( tiempo , e_termina_de_atender_pkg_en_C1_S2 ) );
+        }
+        else colapkgsC1.push_back(p);
+    }
+    // llegada de siguiente pkg
+    double tiempo = Reloj + Prob::unif (3, 7);
+    colaEventos.encolar(  new Event( tiempo , e_llega_pkg_a_C1 ) );
+
+}
+/* E3 */
+void termina_de_atender_msg_en_C1_S1() {
+    A->ocupada = false;  // ??????????  A S1   ,   A S2
+    double tiempo = Reloj + 3;
+    colaEventos.encolar(  new Event( tiempo , e_llega_msg_a_C2 ) );
+}
+/* E4 */
+void termina_de_atender_pkg_en_C1_S2() {
+    // el tiempo de propagacion es 2
+    double tiempo = Reloj + 2;
+    colaEventos.encolar(  new Event( tiempo , e_llega_pkg_a_C3 ) );
+}
+/* E5 */
+void llega_ACK_a_C1                 () {}
+/* E6 */
+void llega_msg_malo_a_C1            () {}
+/* E7 */
+void llega_msg_a_C2                 () {}
+/* E8 */
+void termina_de_atender_msg_en_C2   () {}
+/* E9 */
+void llega_pkg_a_C3                 () {
+    
+    if ( C->ocupada ) {
+
+        //colapkgsC3.push_back( pkg );
+
+    }
+    else {  ///  Si NO esta' ocupada PC
+        C->ocupada = true;  //ahora lo esta'
+
+        double t_atender =  Prob::norm(1.5, 0.01);
+
+        double tiempo = Reloj + t_atender;
+
+        colaEventos.encolar(  new Event( tiempo , e_fin_procesa_pkg_en_C3 ) );
+    }
+
+    // si llego un pkg con tiempo menor, debe ser atendido
+    if ( ! colapkgsC3.empty() ) {
+        cout << "colapkgsC3 no est'a vac'ia TODO ";
+        double tiempo = Reloj + Prob::norm(4, 0.01);
+        colaEventos.encolar(  new Event( tiempo , e_llega_pkg_a_C3 ) );
+    }
+    // else {} E9 = infinito
+}
+/* E10 */
+int secuenciaC3 = 0;
+void fin_procesa_pkg_en_C3          () {
+    secuenciaC3++;
+    if (secuenciaC3>99) { secuenciaC3 = 0; }
+
+    Pkg * pt = colapkgsC3.back() ;
+    
+    C->ocupada = false;
+}
+/* E11 */
+void se_activa_el_timer             () {}
+
 
 //-------------------------------------------------------------------------------------------------------
 ///--------------------------ESTADISTICAS----------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------------
 
 
-///estructuras de datos usadas para recolectar estad�sticas a desplegar durante y despu�s de la simulaci�n
+///estructuras de datos usadas para recolectar estadisticas a desplegar durante y despu�s de la simulaci�n
 list <int> longitudA;     //guarda la longitud de la cola de la Computadora A (incluyendo ambas prioridades) en cada paso de la simulacion
 list <int> longitudB;     //guarda la longitud de la cola de la Computadora B (incluyendo ambas prioridades) en cada paso de la simulacion
 list <int> longitudC;     //guarda la longitud de la cola de la Computadora C (incluyendo ambas prioridades) en cada paso de la simulacion
@@ -226,21 +270,6 @@ static const char* eventoProcesado(int i) {
 
 
 //-------------------------------------------------------------
-///---------------------------EVENTOS--------------------------
-//-------------------------------------------------------------
-
-void llega_msg_a_C1                   (); // E1
-void llega_pkg_a_C1                   (); // E2
-void termina_de_atender_msg_en_C1_S1  (); // E3
-void termina_de_atender_pkg_en_C1_S2  (); // E4
-void llega_ACK_a_C1                   (); // E5
-void llega_msg_malo_a_C1              (); // E6
-void llega_msg_a_C2                   (); // E7
-void termina_de_atender_msg_en_C2     (); // E8
-void llega_pkg_a_C3                   (); // E9
-void fin_procesa_pkg_en_C3            (); // E10
-void se_activa_el_timer               (); // E11
-
 
 //-------------------------------------------------------------
 //-------------------------------------------------------------
@@ -260,15 +289,13 @@ void ejecutarEvento(int i) {
         case 4 : {termina_de_atender_pkg_en_C1_S2(); break;}
         case 5 : {llega_ACK_a_C1                 (); break;}
         case 6 : {llega_msg_malo_a_C1            (); break;}
-        case 7 : {llega_msg_a_C2                 (); break;}  /// ojo malo
+        case 7 : {llega_msg_a_C2                 (); break;}
         case 8 : {termina_de_atender_msg_en_C2   (); break;}
         case 9 : {llega_pkg_a_C3                 (); break;}
         case 10: {fin_procesa_pkg_en_C3          (); break;}
         case 11: {se_activa_el_timer             (); break;}
     }
 }
-
-
 
 static void limpiarConsola () {
     #ifdef _WIN32
@@ -278,13 +305,23 @@ static void limpiarConsola () {
     #endif
 }
 
+void restEst() {
+    colaMsgsC1.clear();
+    colapkgsC1.clear();
+
+    colaACKsC1.clear();
+
+    colaMsgsC2.clear();
+
+    colapkgsC3.clear();
+}
+
 
 int main() {
     srand(time(NULL));
     ///> semilla, necesaria para las funciones de probabilidad
 
-    for (int i = 0; i < 10; ++i)
-        std::cout << Prob::unif(3,7) << '\n';
+    //for (int i=0; i<5;i++) cout<< Prob::unif(3, 7)<<endl;
 
     double
         numSim,
@@ -333,10 +370,6 @@ int main() {
 
 
     for(int i = 0; i < numSim; i++) {
-
-        A->id = 'A';
-        B->id = 'B';
-        C->id = 'C';
 
         /** la simulacioin inicia con los eventos
             1 y 2,  llega msg a c1 y
@@ -506,17 +539,6 @@ int main() {
     cout << "Promedio de total revisiones por archivo: " << tpromRev << endl<<endl;
 }
 
-
-void restEst() {
-    colaMsgsC1.clear();
-    colapkgsC1.clear();
-
-    colaACKsC1.clear();
-
-    colaMsgsC2.clear();
-
-    colapkgsC3.clear();
-
     /*
     while(!AV->cola1.empty())     //las colas stl no tienen un clear directo, por lo que hubo que iterar
         AV->cola1.pop();
@@ -525,79 +547,3 @@ void restEst() {
         AV->cola1.pop();
 */
 
-}
-
-
-
-/// ------------------------------------------------
-
-///                    EVENTOS
-
-/// ------------------------------------------------
-
-/* E1 */
-void llega_msg_a_C1                 () {}
-/* E2 */
-void llega_pkg_a_C1                 () {
-    if ( A->ocupada ) {
-
-    }
-    else {  ///  Si NO esta' ocupada PC A
-        A->ocupada = true;  //ahora lo esta'
-        colapkgsC1.push_back( new Pkg() );
-        /**
-         * cuando se atiende Pkg, tambi�n debe "armarse" para ser enviado y se realiza la transferencia de este a
-         * la l�nea de transmisi�n (se pone bit por bit). El tiempo promedio que se tarda en esto es de 1/2 segundo,
-         * distribuci�n exponencial.
-         */
-        double t_atender =  Prob::exp(0.5);
-
-        /**
-         * Cada Pkg tiene un tiempo de propagaci�n de 2 segundos
-         * y tiene una probabilidad 0.05 de perderse.
-         */
-        double tiempo = Reloj + t_atender + 2;  ///   ???????????????????????????????
-        colaEventos.encolar(  new Event( tiempo , e_termina_de_atender_pkg_en_C1_S2 ) );
-
-        tiempo = Reloj + Prob::norm(4, 0.01);
-        colaEventos.encolar(  new Event( tiempo , e_llega_pkg_a_C1 ) );
-    }
-
-}
-/* E3 */
-void termina_de_atender_msg_en_C1_S1() {}
-/* E4 */
-void termina_de_atender_pkg_en_C1_S2() {}
-/* E5 */
-void llega_ACK_a_C1                 () {}
-/* E6 */
-void llega_msg_malo_a_C1            () {}
-/* E7 */
-void llega_msg_a_C2                 () {}
-/* E8 */
-void termina_de_atender_msg_en_C2   () {}
-/* E9 */
-void llega_pkg_a_C3                 () {
-    if ( C->ocupada ) {
-
-    }
-    else {  ///  Si NO esta' ocupada PC
-        C->ocupada = true;  //ahora lo esta'
-        colapkgsC1.push_back( new Pkg() );
-
-
-
-        double t_atender =  Prob::norm(1.5, 0.01);
-
-        double tiempo = Reloj + t_atender;
-
-        colaEventos.encolar(  new Event( tiempo , e_fin_procesa_pkg_en_C3 ) );
-
-        tiempo = Reloj + Prob::norm(4, 0.01);
-        colaEventos.encolar(  new Event( tiempo , e_llega_pkg_a_C1 ) );
-    }
-}
-/* E10 */
-void fin_procesa_pkg_en_C3          () {}
-/* E11 */
-void se_activa_el_timer             () {}

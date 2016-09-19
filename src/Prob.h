@@ -1,4 +1,4 @@
-#include <math.h>
+//#include <math.h>
 #include <stdlib.h>
 #include <random>
 #define pi 3.1415926535
