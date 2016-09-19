@@ -31,7 +31,7 @@ list <Pkg*> colapkgsC3;
 
 /* E1 */
 void llega_msg_a_C1                 () {
-    Msg* m new Msg();
+    Msg* m = new Msg();
     if ( A->ocupada ) {
         colaMsgsC1.push_back(m);
     }
